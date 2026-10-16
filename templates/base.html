@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Expense Tracker Manager{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('dashboard') }}">
+      <span class="brand-mark">₹</span>
+      <span>pocket<span class="brand-light">wise</span><small>EXPENSE TRACKER</small></span>
+    </a>
+    <nav><a href="{{ url_for('dashboard') }}" class="nav-link">Overview</a><a class="button button-primary nav-cta" href="{{ url_for('add_expense') }}">＋ Add expense</a></nav>
+  </header>
+  <main class="page-shell">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer"><span>POCKETWISE · EXPENSE TRACKER MANAGER</span><span>Make every rupee count.</span></footer>
+</body>
+</html>

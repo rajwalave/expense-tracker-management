@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Overview · Pocketwise{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <div class="eyebrow"><span class="eyebrow-dot"></span> YOUR MONEY, IN FOCUS</div>
+    <h1>Spending, made<br><span>simple.</span></h1>
+    <p class="hero-copy">A clearer view of where your money goes.</p>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+    <div class="art-card"><span class="art-card-label">MONTHLY SPEND</span><strong>{{ month_total|inr }}</strong><span class="art-card-foot"><i></i> Keep it intentional</span></div>
+    <div class="art-coin coin-one">₹</div><div class="art-coin coin-two">↗</div>
+  </div>
+</section>
+
+<section class="stat-grid">
+  <article class="stat-card stat-primary"><div class="stat-top"><span>Spent this month</span><span class="stat-icon">↗</span></div><div class="stat-value">{{ month_total|inr }}</div><div class="stat-note">Selected month · {{ month }}</div></article>
+  <article class="stat-card"><div class="stat-top"><span>All-time spending</span><span class="stat-icon muted">₹</span></div><div class="stat-value">{{ all_time_total|inr }}</div><div class="stat-note">Across all recorded expenses</div></article>
+  <article class="stat-card"><div class="stat-top"><span>Expenses this month</span><span class="stat-icon muted">▤</span></div><div class="stat-value">{{ expenses|length }}</div><div class="stat-note">Matching current filters</div></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel expenses-panel">
+    <div class="panel-heading"><div><div class="eyebrow">TRANSACTION LOG</div><h2>Your expenses</h2></div><a href="{{ url_for('add_expense') }}" class="text-link">＋ Add new</a></div>
+    <form class="filters" method="get" action="{{ url_for('dashboard') }}">
+      <label class="filter-field">Month<input type="month" name="month" value="{{ month }}"></label>
+      <label class="filter-field">Category<select name="category"><option value="">All categories</option>{% for item in categories %}<option value="{{ item }}" {% if selected_category == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+      <label class="filter-field search-field">Search<input type="search" name="search" placeholder="Find an expense..." value="{{ search }}"></label>
+      <button class="button button-dark filter-button" type="submit">Apply</button>
+    </form>
+    {% if expenses %}
+    <div class="table-wrap"><table><thead><tr><th>EXPENSE</th><th>CATEGORY</th><th>DATE</th><th>AMOUNT</th><th class="actions-head">ACTIONS</th></tr></thead><tbody>
+      {% for expense in expenses %}
+      <tr>
+        <td><div class="expense-name">{{ expense.title }}</div><div class="expense-sub">{{ expense.payment_method }}{% if expense.notes %} · {{ expense.notes }}{% endif %}</div></td>
+        <td><span class="category-pill">{{ expense.category }}</span></td>
+        <td class="date-cell">{{ expense.expense_date.strftime('%d %b %Y') if expense.expense_date.strftime is defined else expense.expense_date }}</td>
+        <td class="amount-cell">{{ expense.amount|inr }}</td>
+        <td><div class="row-actions"><a href="{{ url_for('edit_expense', expense_id=expense.id) }}" aria-label="Edit {{ expense.title }}">Edit</a><form method="post" action="{{ url_for('delete_expense', expense_id=expense.id) }}" data-confirm="Delete this expense?"><button type="submit" class="delete-link">Delete</button></form></div></td>
+      </tr>
+      {% endfor %}
+    </tbody></table></div>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon">₹</div><h3>No expenses found</h3><p>Try another filter or add your first expense.</p><a class="button button-primary" href="{{ url_for('add_expense') }}">Add an expense</a></div>
+    {% endif %}
+    <div class="panel-foot"><span>Showing {{ expenses|length }} record(s)</span><span>Amounts in INR (₹)</span></div>
+  </div>
+  <aside class="side-column">
+    <div class="panel category-panel"><div class="panel-heading"><div><div class="eyebrow">WHERE IT GOES</div><h2>By category</h2></div></div>
+      {% if category_totals %}
+        {% set max_total = category_totals[0].total|float %}
+        <div class="category-list">{% for item in category_totals %}
+          <div class="category-item"><div class="category-line"><span>{{ item.category }}</span><strong>{{ item.total|inr }}</strong></div><div class="progress-track"><div class="progress-fill fill-{{ loop.index0 % 5 }}" style="width: {{ (item.total|float / max_total * 100) if max_total else 0 }}%"></div></div></div>
+        {% endfor %}</div>
+      {% else %}<p class="muted-copy">Your category breakdown will appear here after you add expenses.</p>{% endif %}
+    </div>
+    <div class="tip-card"><div class="tip-symbol">✳</div><div class="eyebrow">A LITTLE INSIGHT</div><h3>{% if largest %}Your biggest expense{% else %}Start with one expense{% endif %}</h3><p>{% if largest %}<strong>{{ largest.title }}</strong> is your largest expense this month at <strong>{{ largest.amount|inr }}</strong>. Small habits add up.{% else %}Add a transaction to start building a clearer picture of your spending habits.{% endif %}</p></div>
+  </aside>
+</section>
+{% endblock %}
